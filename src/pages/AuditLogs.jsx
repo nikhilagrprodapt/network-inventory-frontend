@@ -152,8 +152,7 @@ export default function AuditLogs() {
           <>
             <div className="mt-4 overflow-hidden rounded-xl border border-slate-800">
               <div className="w-full overflow-x-auto">
-                <table className="w-full table-fixed border-collapse">
-
+                <table className="w-full min-w-[1150px] border-collapse">
                   <thead>
                     <tr className="bg-[#0f172a]">
                       <th className="px-3 py-2 text-left text-xs font-semibold text-slate-300 whitespace-nowrap">
@@ -296,6 +295,7 @@ function ActionBadge({ value }) {
   const label = v.replaceAll("_", " ");
   return <Badge variant={variant}>{label}</Badge>;
 }
+
 
 async function copyText(text) {
   if (!text) return;

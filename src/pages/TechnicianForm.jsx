@@ -37,8 +37,16 @@ export default function TechnicianForm({ mode = "create" }) {
           phone: data.phone ?? "",
           status: data.status ?? "ACTIVE",
         });
-      } catch {
-        setErr("Failed to load technician.");
+           } catch (e) {
+        const status = e?.response?.status;
+        const data = e?.response?.data;
+        const serverMsg =
+          data?.message ||
+          data?.error ||
+          (typeof data === "string" ? data : JSON.stringify(data)) ||
+          e?.message ||
+          "Failed to load technician.";
+        setErr(`Failed to load technician. HTTP ${status || "?"}: ${serverMsg}`);
       } finally {
         setLoading(false);
       }

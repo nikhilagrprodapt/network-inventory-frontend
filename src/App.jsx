@@ -173,7 +173,7 @@ export default function App() {
                 <Route
   path="/audit"
   element={
-    <RequireRole allowed={[ROLE.ADMIN]}>
+    <RequireRole allowed={[ROLE.ADMIN, ROLE.MANAGER]}>
       <AuditLogs />
     </RequireRole>
   }
