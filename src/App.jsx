@@ -53,6 +53,8 @@ import MyTasks from "./pages/MyTasks";
 import AdminAuditLogs from "./pages/Admin/AdminAuditLogs";
 import AdminUsers from "./pages/Admin/AdminUsers";
 
+import AiAssistant from "./pages/AiAssistant";
+
 
 const ROLE = {
   ADMIN: "ADMIN",
@@ -391,6 +393,16 @@ export default function App() {
                       </RequireRole>
                     }
                   />
+
+                  <Route
+  path="/ai-assistant"
+  element={
+    <RequireRole allowed={[ROLE.ADMIN, ROLE.TECHNICIAN]}>
+      <AiAssistant />
+    </RequireRole>
+  }
+/>
+
 
                   {/* Catch-all */}
                   <Route path="*" element={<Navigate to="/" replace />} />

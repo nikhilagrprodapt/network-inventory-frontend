@@ -26,6 +26,8 @@ const NAV_ADMIN = [
   { label: "Assets", path: "/assets" },
   { label: "Technicians", path: "/technicians" },
   { label: "Tasks", path: "/tasks" },
+  { label: "AI Assistant", path: "/ai-assistant" },
+
 
 ];
 
@@ -47,6 +49,7 @@ const NAV_MANAGER = [
 const NAV_TECHNICIAN = [
   { label: "Dashboard", path: "/" },
   { label: "My Tasks", path: "/my-tasks" },
+  { label: "AI Assistant", path: "/ai-assistant" },
 ];
 
 const NAV_INVENTORY = [
