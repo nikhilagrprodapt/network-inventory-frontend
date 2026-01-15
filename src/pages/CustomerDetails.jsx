@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { customersApi } from "../api/customers.api";
 import { api } from "../api/axios";
+import { splittersApi } from "../api/splitters.api";
 
 export default function CustomerDetails() {
   const { id } = useParams();
@@ -10,9 +11,16 @@ export default function CustomerDetails() {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
+  // ✅ Keep these names (NO breaking changes) — now used by dropdowns
   const [splitterId, setSplitterId] = useState("");
   const [splitterPort, setSplitterPort] = useState("");
+
   const [msg, setMsg] = useState("");
+
+  // ✅ NEW: dropdown data
+  const [splitters, setSplitters] = useState([]);
+  const [availablePorts, setAvailablePorts] = useState([]);
 
   // ✅ Deactivate modal state
   const [showDeactivate, setShowDeactivate] = useState(false);
@@ -83,6 +91,14 @@ export default function CustomerDetails() {
 
       const customerId = data?.customerId ?? data?.id;
       await loadConnectionDetails(customerId);
+
+      // ✅ NEW: Load splitters for dropdown
+      try {
+        const list = await splittersApi.getAll();
+        setSplitters(list);
+      } catch {
+        setSplitters([]);
+      }
     } catch (e) {
       setErr("Failed to load customer details.");
     } finally {
@@ -100,6 +116,29 @@ export default function CustomerDetails() {
     const v = String(customer?.status ?? "").toUpperCase();
     return v === "DEACTIVATED";
   }, [customer?.status]);
+
+  // ✅ NEW: When splitterId changes => load free ports
+  useEffect(() => {
+    if (!splitterId) {
+      setAvailablePorts([]);
+      setSplitterPort("");
+      return;
+    }
+
+    (async () => {
+      try {
+        const ports = await splittersApi.getAvailablePorts(Number(splitterId));
+        setAvailablePorts(ports);
+
+        // auto-select first available port
+        if (ports.length > 0) setSplitterPort(String(ports[0]));
+        else setSplitterPort("");
+      } catch {
+        setAvailablePorts([]);
+        setSplitterPort("");
+      }
+    })();
+  }, [splitterId]);
 
   const onAssignSplitter = async () => {
     setErr("");
@@ -126,6 +165,7 @@ export default function CustomerDetails() {
       showSuccess("✅ Splitter assigned successfully!");
       setSplitterId("");
       setSplitterPort("");
+      setAvailablePorts([]);
     } catch (e2) {
       const status = e2?.response?.status;
       const data = e2?.response?.data;
@@ -386,26 +426,45 @@ export default function CustomerDetails() {
           <h3 className="text-base font-semibold text-slate-100">Assign Splitter</h3>
 
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-xl">
+            {/* ✅ Splitter dropdown */}
             <label className="grid gap-2 text-sm text-slate-300">
               <span className="font-medium">Splitter ID *</span>
-              <input
+              <select
                 value={splitterId}
                 onChange={(e) => setSplitterId(e.target.value)}
-                placeholder="e.g. 10"
                 className={inputCls}
                 disabled={isDeactivated}
-              />
+              >
+                <option value="">Select Splitter</option>
+                {splitters.map((s) => (
+                  <option key={s.splitterId} value={String(s.splitterId)}>
+                    {s.name} (ID: {s.splitterId}, Ports: {s.portCapacity})
+                  </option>
+                ))}
+              </select>
             </label>
 
+            {/* ✅ Port dropdown */}
             <label className="grid gap-2 text-sm text-slate-300">
               <span className="font-medium">Splitter Port *</span>
-              <input
+              <select
                 value={splitterPort}
                 onChange={(e) => setSplitterPort(e.target.value)}
-                placeholder="e.g. 1"
                 className={inputCls}
-                disabled={isDeactivated}
-              />
+                disabled={isDeactivated || !splitterId}
+              >
+                {!splitterId ? (
+                  <option value="">Select splitter first</option>
+                ) : availablePorts.length === 0 ? (
+                  <option value="">No free ports</option>
+                ) : (
+                  availablePorts.map((p) => (
+                    <option key={p} value={String(p)}>
+                      Port {p}
+                    </option>
+                  ))
+                )}
+              </select>
             </label>
           </div>
 
